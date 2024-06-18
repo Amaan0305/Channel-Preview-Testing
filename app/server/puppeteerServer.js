@@ -1,19 +1,20 @@
 const express = require('express');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const fs = require('fs');
 const path = require('path');
 
 const app = express();
-const port = 4001;
+const port = 8080;
+puppeteer.use(StealthPlugin());
 
 let browser;
 let page;
 
 const viewports = [
-    { width: 430, height: 932 },   // Mobile
+    { width: 500, height: 932 },   // Mobile
     { width: 1920, height: 1080 }  // Large Desktop
 ];
-
 
 async function initializePuppeteer() {
   browser = await puppeteer.launch({ headless: true });
@@ -23,6 +24,20 @@ async function initializePuppeteer() {
   )
 }
 
+async function facebookLoginByPass(page){
+  await page.evaluate(() => {
+    const closeButton = document.querySelector('div[role=button][aria-label=Close]');
+    if (closeButton) {
+      closeButton.click();
+    }
+  });
+  await page.waitForSelector('div[data-nosnippet]');
+  await page.addStyleTag({ content: `
+      div[data-nosnippet], div[role=banner] {
+        display: none !important;
+      }
+  `});
+}
 
 app.use(express.json());
 
@@ -40,8 +55,13 @@ app.post('/screenshot', async (req, res) => {
 
     for (const viewport of viewports) {
       await page.setViewport(viewport);
-      await page.waitForSelector(selector, { timeout: 60000 });
-      
+
+      if(channel === "facebook") {
+        facebookLoginByPass(page);
+      }
+
+      await page.waitForSelector(selector, { visible: true, timeout: 60000 });
+
       await page.evaluate((sel) => {
         const element = document.querySelector(sel);
         if (element) {
