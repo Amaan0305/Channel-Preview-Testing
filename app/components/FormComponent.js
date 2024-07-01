@@ -56,19 +56,19 @@ const FormComponent = ({ channels }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mx-auto max-w-lg">
-      <div>
-        <label htmlFor="dropdown1" className="block text-sm font-medium text-gray-700">
+    <form onSubmit={handleSubmit} className="max-w-xl mx-auto p-8 bg-white shadow-md rounded-lg">
+      <div className="mb-4">
+        <label htmlFor="dropdown1" className="block text-lg font-semibold text-gray-900 mb-2">
           Select Channel
         </label>
         <select
           id="dropdown1"
           value={option1}
           onChange={(e) => setOption1(e.target.value)}
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
           <option value="" disabled>
-            Select an option
+            Select a Channel
           </option>
           {channels.map((channel) => (
             <option key={channel} value={channel}>
@@ -78,8 +78,8 @@ const FormComponent = ({ channels }) => {
         </select>
       </div>
 
-      <div>
-        <label htmlFor="inputUrl" className="block text-sm font-medium text-gray-700">
+      <div className="mb-4">
+        <label htmlFor="inputUrl" className="block text-lg font-semibold text-gray-900 mb-2">
           Enter URL
         </label>
         <input
@@ -87,13 +87,13 @@ const FormComponent = ({ channels }) => {
           type="text"
           value={inputUrl}
           onChange={(e) => setInputUrl(e.target.value)}
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           placeholder="Enter URL"
         />
       </div>
 
-      <div>
-        <label htmlFor="inputScenario" className="block text-sm font-medium text-gray-700">
+      <div className="mb-4">
+        <label htmlFor="inputScenario" className="block text-lg font-semibold text-gray-900 mb-2">
           Enter Scenario
         </label>
         <input
@@ -101,13 +101,13 @@ const FormComponent = ({ channels }) => {
           type="text"
           value={inputScenario}
           onChange={(e) => setInputScenario(e.target.value)}
-          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+          className="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           placeholder="Enter Scenario"
         />
       </div>
 
-      {error && <p className="text-red-500">{error}</p>}
-      {success && <p className="text-green-500">{success}</p>}
+      {error && <p className="text-red-500 mb-4">{error}</p>}
+      {success && <p className="text-green-500 mb-4">{success}</p>}
 
       <div>
         <button

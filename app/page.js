@@ -1,47 +1,47 @@
 "use client"
-// "./components/"
+
 import ImageGallery from "./components/ImageGallery";
-// import imagePaths from "../public/results/imagePaths.json";
-// import comparison_results from "../public/results/comparison_results.json"
 import { useEffect, useState } from "react";
 import Loader from "./components/loader";
 import Link from "next/link";
 
-
 export default function Home() {
-  const [loading, setLoading] = useState(false); 
+  const [loading, setLoading] = useState(false);
   const [imagePaths, setImagePaths] = useState([]);
-  useEffect(() => {
-    const fetchImagePaths = async () => {
-      try {
-        const response = await fetch("/api/getImagePaths", {
-          method: "GET",
-          headers: { "Content-Type" : "application/json"},
-        });
-        const data = await response.json();
-        // alert(data);
-        // console.log(data);
-        setImagePaths(data);
-      } catch (error) {
-        console.error("Failed to fetch image paths:", error);
-      }
-    };
 
+  useEffect(() => {
     fetchImagePaths();
   }, []);
+
+  const fetchImagePaths = async () => {
+    try {
+      const response = await fetch("/api/getImagePaths", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+      });
+      const data = await response.json();
+      setImagePaths(data);
+    } catch (error) {
+      console.error("Failed to fetch image paths:", error);
+    }
+  };
+
   const runTest = async () => {
-    try{
-      setLoading(true)
+    try {
+      setLoading(true);
       const response = await fetch("/api/runTest", {
         method: "POST",
-        headers: { "Content-Type" : "application/json"},
-      })
+        headers: { "Content-Type": "application/json" },
+      });
+      // After test completes, fetch image paths again to update the gallery
+      await fetchImagePaths();
     } catch (err) {
-      console.log(err);
+      console.log("Error running test:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
+
   return (
     <div className="text-align:center">
       <h1 className="head-text">Channel Preview Testing</h1>
@@ -51,22 +51,18 @@ export default function Home() {
       ) : (
         <button
           className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded"
-          onClick={(e) => runTest()}
+          onClick={runTest}
           disabled={loading} // Disable button when loading
         >
           Run Test
         </button>
       )}
       <Link href="./admin">
-        <button
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 m-2 rounded"
-        >
+        <button className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 m-2 rounded">
           Go to Admin Page
         </button>
       </Link>
-      {/* alert(imagePaths); */}
-      <ImageGallery imagePaths={imagePaths}/>
+      <ImageGallery imagePaths={imagePaths} onFixedSuccess={fetchImagePaths}/>
     </div>
   );
 }
-

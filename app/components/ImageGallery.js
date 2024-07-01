@@ -1,32 +1,39 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const fixed = async(channel, name,idx) => {
-  console.log(channel);
-  console.log(name);
-  console.log(idx);
-  try {
-    const response = await fetch("/api/fixed", {
-      method: "POST",
-      headers: { "Content-Type" : "application/json"},
-      body: JSON.stringify({
-        channel: `${channel}`, 
-        name: `${name}`,
-        idx :`${idx}`
-      })
-    })
-    console.log(response);
-  } catch (err) {
-    console.log(err);
-  }
-}
+const ImageGallery = ({ imagePaths, onFixedSuccess }) => {
+  const labels = ["old", "new", "difference"];
+  const [loading, setLoading] = useState(false); // State for loading indicator
 
-const ImageGallery = ({ imagePaths }) => {
-  const labels = ["new", "old", "difference"];
-  // console.log(imagePaths);
-  // alert(imagePaths);
   useEffect(() => {
     console.log('Image paths updated:', imagePaths);
   }, [imagePaths]);
+
+  const fixed = async (channel, referenceUrl, onFixedSuccess) => {
+    console.log(channel);
+    console.log(referenceUrl);
+    setLoading(true); // Set loading to true when fixing starts
+
+    try {
+      const response = await fetch("/api/fixed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          channel,
+          referenceUrl,
+        })
+      });
+      console.log(response);
+
+      // Call the callback to refresh image paths
+      if (response.ok) {
+        onFixedSuccess();
+      }
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoading(false); // Set loading to false when fixing ends (success or error)
+    }
+  }
 
   return (
     <div className='m-4'>
@@ -37,9 +44,15 @@ const ImageGallery = ({ imagePaths }) => {
             <div key={idx} style={{ marginBottom: '10px' }}>
               <h3>
                 {folder}
-                <button className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded' onClick={() => {fixed(platform,imagePaths[platform][folder][0],idx)}}>Fixed</button>
+                <button
+                  className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 m-2 rounded'
+                  onClick={() => fixed(platform, imagePaths[platform][folder][0], onFixedSuccess)}
+                  disabled={loading} // Disable button when loading
+                >
+                  {loading ? 'Fixing...' : 'Fixed'}
+                </button>
               </h3>
-              <div style={{ display: 'flex', flexWrap: 'wrap' ,justifyContent : "space-around"}}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: "space-around" }}>
                 {imagePaths[platform][folder].map((imagePath, imgIdx) => (
                   <div key={imgIdx} style={{ textAlign: 'center', marginRight: '10px', marginBottom: '10px' }}>
                     <img

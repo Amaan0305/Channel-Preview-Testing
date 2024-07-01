@@ -2,8 +2,8 @@ import express from 'express';
 import puppeteer from 'puppeteer-extra';
 import path from 'path';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import cloudinary from '../lib/cloudinary.mjs';
 import { PassThrough } from 'stream';
+import cloudinary from '../lib/cloudinary.mjs';
 import connectToDatabase from '../lib/mongodb.mjs';
 import SocialMedia from '../lib/models/channels.mjs';
 import ScreenshotReference from '../lib/models/ScreenshotReference.mjs';
@@ -11,9 +11,9 @@ import ScreenshotTest from '../lib/models/ScreenshotTest.mjs';
 import cors from 'cors';
 
 // these are used for testing purpose(uploading channel data)
-import captureScreenshots from './captureScreenshots.mjs';
-import * as links from '../links/index.mjs';
-import addSocialMediaChannel from './addChannel.mjs';
+// import captureScreenshots from './captureScreenshots.mjs';
+// import * as links from '../links/index.mjs';
+// import addSocialMediaChannel from './addChannel.mjs';
 
 const app = express();
 const port = 4001;
@@ -46,21 +46,38 @@ async function initializePuppeteer() {
 
 app.use(express.json());
 
-async function facebookLoginByPass(page) {
-  await page.evaluate(() => {
-    const closeButton = document.querySelector('div[role=button][aria-label=Close]');
-    if (closeButton) {
-      closeButton.click();
-    }
-  });
-  await page.waitForSelector('div[data-nosnippet]');
-  await page.addStyleTag({
-    content: `
-      div[data-nosnippet], div[role=banner] {
-        display: none !important;
-      }
-  `});
+// async function facebookLoginByPass(page) {
+  // await page.evaluate(() => {
+  //   const closeButton = document.querySelector('div[role=button][aria-label=Close]');
+  //   if (closeButton) {
+  //     closeButton.click();
+  //   }
+  // });
+  // await page.waitForSelector('div[data-nosnippet]');
+  // await page.addStyleTag({
+  //   content: `
+  //     div[data-nosnippet], div[role=banner] {
+  //       display: none !important;
+  //     }
+  // `});
+// }
+
+async function runLoginByPassCode(page, loginByPassCode) {
+  try {
+    // Define the function within page.evaluate to ensure it's executed in the page context
+    const runCode = new Function(`
+      return (async () => {
+        ${loginByPassCode}
+      })();
+    `);
+    await page.evaluate(runCode);
+  } catch (error) {
+    console.error('Error executing loginByPass code:', error);
+  }
 }
+
+
+
 
 app.post('/screenshot', async (req, res) => {
   const { link  , selector, name, directory, channel } = req.body;
@@ -77,9 +94,12 @@ app.post('/screenshot', async (req, res) => {
 
     for (const viewport of viewports) {
       await page.setViewport(viewport);
-
-      if (channel === "facebook") {
-        await facebookLoginByPass(page);
+      const socialMediaChannel = await SocialMedia.findOne({ channelName: channel });
+      const loginByPassCode = socialMediaChannel ? socialMediaChannel.loginByPass : null;
+      // console.log(loginByPassCode);
+      if (loginByPassCode) {
+        // Execute the loginByPass code in the context of the Puppeteer page
+        await runLoginByPassCode(page, loginByPassCode);
       }
       await page.waitForSelector(selector, { timeout: 60000 });
 
@@ -173,23 +193,6 @@ app.post('/add', async (req, res) => {
   }
 });
 
-// Endpoint to fetch user-provided code for a channel
-app.post('/fetch-channel/:channelName', async (req, res) => {
-  const { channelName } = req.params;
-  console.log(channelName);
-
-  try {
-    const channel = await SocialMedia.findOne({ channelName });
-
-    if (!channel) {
-      return res.status(404).json({ message: 'Channel not found' });
-    }
-
-    res.status(200).json(channel);
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching channel data', error });
-  }
-});
 
 const startServer = async () => {
   try {
@@ -218,7 +221,7 @@ const startServer = async () => {
     // }
 
     // await captureScreenshots('reference');
-    // console.log("Reference Image generated");s
+    // console.log("Reference Image generated");
 
   } catch (err) {
     console.error(err);

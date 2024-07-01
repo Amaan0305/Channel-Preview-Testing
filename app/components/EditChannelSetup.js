@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import Editor from '@monaco-editor/react';
 
 export default function EditChannelSetupComponent({ channelNames, onSubmit }) {
   const [selectedChannel, setSelectedChannel] = useState('');
@@ -18,11 +19,13 @@ export default function EditChannelSetupComponent({ channelNames, onSubmit }) {
         setLoading(true);
         setError('');
         try {
-          const response = await fetch(`http://localhost:4001/fetch-channel/${selectedChannel}`, {
+          console.log(selectedChannel);
+          const response = await fetch(`/api/socialmedia/fetch`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify(selectedChannel)
           });
           if (response.ok) {
             const data = await response.json();
@@ -73,7 +76,6 @@ export default function EditChannelSetupComponent({ channelNames, onSubmit }) {
         },
         body: JSON.stringify(formData)
       });
-
       if (response.ok) {
         setMessage('Changes saved successfully');
         // Reset form data
@@ -99,12 +101,12 @@ export default function EditChannelSetupComponent({ channelNames, onSubmit }) {
   return (
     <form onSubmit={handleSubmit} className="max-w-xl mx-auto p-8 bg-white shadow-md rounded-lg">
       <div className="mb-6">
-        <label htmlFor="selectChannel" className="block text-sm font-medium text-gray-700">Select Channel</label>
+        <label htmlFor="selectChannel" className="block text-lg font-semibold text-gray-900 mb-2">Select Channel</label>
         <select
           id="selectChannel"
           value={selectedChannel}
           onChange={handleChangeChannel}
-          className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
+          className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           required
         >
           <option value="">Select a Channel</option>
@@ -122,28 +124,39 @@ export default function EditChannelSetupComponent({ channelNames, onSubmit }) {
               {error && <div className="text-red-500 mb-4">{error}</div>}
               {message && <div className="text-green-500 mb-4">{message}</div>}
               <div className="mb-6">
-                <label htmlFor="editDivSelector" className="block text-sm font-medium text-gray-700">Div Selector</label>
+                <label htmlFor="editDivSelector" className="block text-lg font-semibold text-gray-900 mb-2">Div Selector</label>
                 <input
                   type="text"
                   id="editDivSelector"
                   value={channelData.divSelector}
                   onChange={(e) => setChannelData({ ...channelData, divSelector: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                   required
                 />
               </div>
               <div className="mb-6">
-                <label htmlFor="editLoginByPass" className="block text-sm font-medium text-gray-700">Login ByPass</label>
-                <textarea
-                  id="editLoginByPass"
-                  value={channelData.loginByPass}
-                  onChange={(e) => setChannelData({ ...channelData, loginByPass: e.target.value })}
-                  className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300 h-40 resize-none"
-                />
+                <label htmlFor="editLoginByPass" className="block text-lg font-semibold text-gray-900 mb-2">Login ByPass</label>
+                <div className="border border-gray-300 rounded-md">
+                  <Editor
+                    height="400px" // Initial height
+                    defaultLanguage="javascript"
+                    theme="vs-dark"
+                    value={channelData.loginByPass}
+                    onChange={(value) => setChannelData({ ...channelData, loginByPass: value })}
+                    options={{
+                      minimap: { enabled: false },
+                      scrollbar: { verticalScrollbarSize: 8, horizontalScrollbarSize: 8 },
+                      lineNumbers: 'on',
+                      glyphMargin: false,
+                      folding: false,
+                      lineNumbersMinChars: 3
+                    }}
+                  />
+                </div>
               </div>
               {channelData.data.length > 0 && (
                 <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700">Links</label>
+                  <label className="block text-lg font-semibold text-gray-900 mb-2">Links</label>
                   <ul className="space-y-4">
                     {channelData.data.map((link, index) => (
                       <li key={index} className="flex flex-col space-y-2">
@@ -153,7 +166,7 @@ export default function EditChannelSetupComponent({ channelNames, onSubmit }) {
                             type="text"
                             value={link.scenario}
                             onChange={(e) => handleLinkChange(index, 'scenario', e.target.value)}
-                            className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           />
                         </div>
                         <div>
@@ -162,7 +175,7 @@ export default function EditChannelSetupComponent({ channelNames, onSubmit }) {
                             type="text"
                             value={link.url}
                             onChange={(e) => handleLinkChange(index, 'url', e.target.value)}
-                            className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-300"
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           />
                         </div>
                       </li>
@@ -170,7 +183,9 @@ export default function EditChannelSetupComponent({ channelNames, onSubmit }) {
                   </ul>
                 </div>
               )}
-              <button type="submit" className="w-full bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
+              <button type="submit" className={`inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${
+                  loading ? 'opacity-50 cursor-not-allowed' : ''
+                }`}>
                 Save Changes
               </button>
             </>

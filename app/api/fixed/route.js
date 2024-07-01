@@ -1,86 +1,104 @@
-import fs from 'fs';
-import path from 'path';
-// import getIm;
+// pages/api/updateReferenceUrl.js
+
+import connectToDatabase from '@/app/lib/mongodb.mjs';
+import Result from '@/app/lib/models/resultSchema.mjs';
 import cloudinary from '@/app/lib/cloudinary.mjs';
-// export const POST = async ( req ) => {
-//     const { channel, name } = await req.json();
+import axios from 'axios';
+import { Readable } from 'stream';
 
-//     console.log('Received channel:', channel);
-//     console.log('Received name:', name);
+function extractPublicId(cloudinaryUrl) {
+  const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/;
+  const match = cloudinaryUrl.match(regex);
+  return match ? match[1] : null;
+}
 
-//     try {
-//         const folderPath = path.join('public', 'results', channel, name);
-
-//         //Check if the folder exists
-//         if (fs.existsSync(folderPath)) {
-//             // Update the baseline
-//             const sourceImagePath = path.join('public', 'results', channel, name,`new-${name}.png`);
-//             const destinationImagePath = path.join('public', 'screenshots', 'reference', channel, `${name}.png`);
-//             fs.copyFileSync(sourceImagePath, destinationImagePath);
-//             console.log(`Copied and renamed image from ${sourceImagePath} to ${destinationImagePath}`);
-
-//             // Delete the folder recursively
-//             fs.rmdirSync(folderPath, { recursive: true });
-//             console.log(`Deleted folder: ${folderPath}`);
-
-//             // Store the image paths in an object
-//             const publicDir = path.join(process.cwd(), 'public', 'results');
-//             const basePath = '/results';
-//             const imagePaths = getImagePaths(publicDir, basePath);
-
-//             return new Response (JSON.stringify("Post removed"), {status: 201})
-//         } else {
-//             return new Response (JSON.stringify("Folder not found"), {status: 201})
-//         }
-
-//     } catch (error) {
-//         console.log(error);
-//         return new Response(JSON.stringify(error), { status: 500 })
-//     }
-// };
-
-export const POST = async (req) => {
-    const { channel, name,idx } = await req.json();
-
+export const POST = async (req, res) => {
+  try {
+    const { channel, referenceUrl } = await req.json();
     console.log('Received channel:', channel);
-    console.log('Received name:', name);
-    console.log('Received idx:', idx);
+    console.log('Received referenceUrl:', referenceUrl);
 
-    try {
-        const cloudinaryFolderPath = `results/${channel}/${name}`;
-
-        // Check if the folder exists by listing its resources
-        const folderResources = await cloudinary.api.resources({ type: 'upload', prefix: cloudinaryFolderPath });
-
-        if (folderResources.resources.length > 0) {
-            const sourceImagePath = `results/${channel}/${name}/new-${name}.png`;
-            const destinationImagePath = `screenshots/reference/${channel}/${name}.png`;
-
-            // Fetch the image from Cloudinary
-            const imageBuffer = await fetchImageBufferFromCloudinary(sourceImagePath);
-
-            // Upload the image to Cloudinary
-            await uploadImageBufferToCloudinary(imageBuffer, destinationImagePath);
-            console.log(`Copied and renamed image from ${sourceImagePath} to ${destinationImagePath}`);
-
-            // Delete the folder recursively
-            for (const resource of folderResources.resources) {
-                await cloudinary.uploader.destroy(resource.public_id);
-            }
-            console.log(`Deleted folder: ${cloudinaryFolderPath}`);
-
-            // Store the image paths in an object
-            const publicDir = path.join(process.cwd(), 'public', 'results');
-            const basePath = '/results';
-            const imagePaths = getImagePaths(publicDir, basePath);
-
-            return new Response(JSON.stringify("Post removed"), { status: 201 });
-        } else {
-            return new Response(JSON.stringify("Folder not found"), { status: 201 });
-        }
-
-    } catch (error) {
-        console.log(error);
-        return new Response(JSON.stringify(error), { status: 500 });
+    if (!channel || !referenceUrl) {
+      return new Response(JSON.stringify({ error: 'channel and referenceUrl are required' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
     }
+
+    await connectToDatabase();
+
+    // Find the platform with the given channel and referenceUrl
+    const result = await Result.findOne({
+      'platforms.platformName': channel,
+      'platforms.images.referenceUrl': referenceUrl
+    });
+
+    if (!result) {
+      return new Response(JSON.stringify({ error: 'Reference URL not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Find the platform matching the channel
+    const platform = result.platforms.find(p => p.platformName === channel);
+    if (!platform) {
+      return new Response(JSON.stringify({ error: 'Platform not found' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Filter images in the found platform
+    let testUrl;
+    platform.images = platform.images.filter(image => {
+      if (image.referenceUrl === referenceUrl) {
+        testUrl = image.testUrl;
+        return false; // Remove the matched image from the array
+      }
+      return true; // Keep other images
+    });
+
+    if (!testUrl) {
+      return new Response(JSON.stringify({ error: 'Test URL not found for the given Reference URL' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    console.log(testUrl);
+    // Download the image from testUrl
+    const response = await axios.get(testUrl, { responseType: 'stream' });
+    const publicId = extractPublicId(referenceUrl);
+
+    // Upload the image buffer to Cloudinary, overwriting the image at referenceUrl
+    const uploadResult = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { public_id: publicId, overwrite: true, invalidate: true },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
+          }
+        }
+      );
+
+      response.data.pipe(uploadStream);
+    });
+
+
+    // Save the updated result document
+    await result.save();
+
+    return new Response(JSON.stringify({ message: 'Image updated and entry deleted successfully', uploadResult }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  } catch (error) {
+    console.error('Error updating reference URL:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  }
 };

@@ -1,4 +1,4 @@
-import captureScreenshots from "@/app/server/captureScreenshots.mjs";
+import captureScreenshots from '@/app/server/captureScreenshots.mjs';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import cloudinary from "@/app/lib/cloudinary";
