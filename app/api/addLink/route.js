@@ -6,7 +6,7 @@ const apiCall = async (channelUrls, channel, divSelector, directory)  => {
     try{
         const channelData = await SocialMedia.findOne({ channelName: channel });
         // console.log(channelData.data.length);
-        const response = await fetch("http://localhost:4001/screenshot", {
+        const response = await fetch(" http://localhost:4001/screenshot", {
             method: "POST",
             headers: { "Content-Type" : "application/json"},
             body: JSON.stringify({

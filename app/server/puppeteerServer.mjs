@@ -11,9 +11,9 @@ import ScreenshotTest from '../lib/models/ScreenshotTest.mjs';
 import cors from 'cors';
 
 // these are used for testing purpose(uploading channel data)
-// import captureScreenshots from './captureScreenshots.mjs';
-// import * as links from '../links/index.mjs';
-// import addSocialMediaChannel from './addChannel.mjs';
+import captureScreenshots from './captureScreenshots.mjs';
+import * as links from '../links/index.mjs';
+import addSocialMediaChannel from './addChannel.mjs';
 
 const app = express();
 const port = 4001;
@@ -118,7 +118,7 @@ app.post('/screenshot', async (req, res) => {
 
         const uploadResult = await new Promise((resolve, reject) => {
           const stream = cloudinary.uploader.upload_stream(
-            { resource_type: 'image', public_id: screenshotName, overwrite: true },
+            { resource_type: 'image', public_id: screenshotName, overwrite: false },
             (error, result) => {
               if (error) {
                 reject(error);
@@ -142,11 +142,39 @@ app.post('/screenshot', async (req, res) => {
         };
         if(directory==='reference'){
           const newScreenshot = new ScreenshotReference(screenshotData);
-          await newScreenshot.save();
+          newScreenshot.save()
+            .then(screenshot => {
+                // Update the specific URL in the SocialMedia document to include the screenshot reference
+                return SocialMedia.findOneAndUpdate(
+                  { channelName : channel, 'data.url': url },
+                  { $set: { 'data.$.screenshotReference': screenshot._id } },
+                  { new: true, useFindAndModify: false }
+                );
+            })
+            // .then(updatedSocialMedia => {
+            //     console.log('Updated Social Media:', updatedSocialMedia);
+            // })
+            .catch(error => {
+                console.error('Error:', error);
+            });
         }
         else{
           const newScreenshot = new ScreenshotTest(screenshotData);
-          await newScreenshot.save();
+          newScreenshot.save()
+            .then(screenshot => {
+                // Update the specific URL in the SocialMedia document to include the screenshot reference
+                return SocialMedia.findOneAndUpdate(
+                  { channelName : channel, 'data.url': url },
+                  { $set: { 'data.$.screenshotTest': screenshot._id } },
+                  { new: true, useFindAndModify: false }
+                );
+            })
+            // .then(updatedSocialMedia => {
+            //     console.log('Updated Social Media:', updatedSocialMedia);
+            // })
+            .catch(error => {
+                console.error('Error:', error);
+            });
         }
       } else {
         return res.status(404).send('Selector not found');
@@ -203,7 +231,7 @@ const startServer = async () => {
       console.log(`Server is running on http://localhost:${port}`);
     });
 
-    // const channels = ["instagram", "linkedin" ,"facebook", "twitter"];
+    // const channels = ["instagram" ,"facebook", "twitter"];
     // let selector;
 
     // for (let channel of channels) {

@@ -10,7 +10,8 @@ import SocialMedia from "@/app/lib/models/channels.mjs";
 import ScreenshotReference from "@/app/lib/models/ScreenshotReference.mjs";
 import ScreenshotTest from "@/app/lib/models/ScreenshotTest.mjs";
 import connectToDatabase from "@/app/lib/mongodb.mjs";
-import Result from "@/app/lib/models/resultSchema.mjs";
+import JobResult from "@/app/lib/models/resultSchema.mjs";
+import mongoose from 'mongoose';
 // import { data } from "autoprefixer";
 
 // Function to fetch image from Cloudinary and return as buffer
@@ -31,7 +32,7 @@ async function uploadImageBufferToCloudinary(buffer, cloudPath, overwrite = fals
 
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
-      { public_id: cloudPath, resource_type: 'image', overwrite: true },
+      { public_id: cloudPath, resource_type: 'image', overwrite},
       (error, result) => {
         if (error) {
           reject(error);
@@ -94,10 +95,10 @@ async function compareImagesAndUpload(img1Buffer, img2Buffer, diffCloudPath, ove
 }
 
 // Function to read URLs from JSON file
-function readUrlsFromFile(filePath) {
-  const fileData = fs.readFileSync(filePath, 'utf8');
-  return JSON.parse(fileData);
-}
+// function readUrlsFromFile(filePath) {
+//   const fileData = fs.readFileSync(filePath, 'utf8');
+//   return JSON.parse(fileData);
+// }
 
 // Function to compare images in two sets of Cloudinary URLs
 async function compareCloudinaryImages(referenceData, newData, channel, overwrite = false) {
@@ -118,11 +119,12 @@ async function compareCloudinaryImages(referenceData, newData, channel, overwrit
         results[referenceData[i].scenario] = [
           referenceData[i].url,
           newData[i].url,
-          diffUrl
+          diffUrl,
+          referenceData[i].id,
         ];
       }
     }
-    
+    // console.log(results);
     console.log(`Total difference pixels: ${totalDiffPixels}`);
     return results;
   } catch (error) {
@@ -152,12 +154,13 @@ export const POST = async () => {
       const testScreenshots = await ScreenshotTest.find({ channel });
 
       // Prepare data for comparison (assuming you have URLs stored in 'url' field)
-      const referenceData = referenceScreenshots.map(screenshot => ({ url: screenshot.url, scenario: screenshot.scenario }));
+      const referenceData = referenceScreenshots.map(screenshot => ({ id: screenshot._id,url: screenshot.url, scenario: screenshot.scenario }));
       const newData = testScreenshots.map(screenshot => ({ url: screenshot.url, scenario: screenshot.scenario }));
-
-      const results = await compareCloudinaryImages(referenceData, newData, channel,true);
+      // console.log(referenceData);
+      const results = await compareCloudinaryImages(referenceData, newData, channel);
       comparisonResults[channel] = results;
     }
+
     // Prepare data in the desired format for MongoDB
     const dataToSave = Object.keys(comparisonResults).map(platformName => ({
       platformName,
@@ -165,18 +168,23 @@ export const POST = async () => {
         imageName: scenario.trim(), // Assuming scenario is the imageName
         referenceUrl: comparisonResults[platformName][scenario][0], // Reference URL
         testUrl: comparisonResults[platformName][scenario][1], // Test URL
-        diffUrl: comparisonResults[platformName][scenario][2] // Diff URL
+        diffUrl: comparisonResults[platformName][scenario][2], // Diff URL
+        screenshotReference: comparisonResults[platformName][scenario][3] // Store ObjectId
       }))
     }));
     try {
-      await Result.deleteMany({});
-      // Save to MongoDB
-      const result = new Result({
-        platforms: dataToSave
+      let currentdate = new Date();
+      let datetime = "Last Sync: " + currentdate.getDay() + "/" + currentdate.getMonth() 
+                          + "/" + currentdate.getFullYear() + " @ " 
+                          + currentdate.getHours() + ":" 
+                          + currentdate.getMinutes() + ":" + currentdate.getSeconds();
+      const result = new JobResult({
+        "jobDate": datetime,
+        platforms: dataToSave,
       });
 
       // Save the document to MongoDB
-      const savedResult = await result.save();
+      await result.save();
       console.log("Data saved successfully to MongoDB");
     } catch (error) {
       console.error("Error saving data to MongoDB:", error);

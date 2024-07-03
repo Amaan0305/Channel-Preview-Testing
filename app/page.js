@@ -20,6 +20,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
       });
       const data = await response.json();
+      console.log("Image Paths",data);
       setImagePaths(data);
     } catch (error) {
       console.error("Failed to fetch image paths:", error);
@@ -62,7 +63,12 @@ export default function Home() {
           Go to Admin Page
         </button>
       </Link>
-      <ImageGallery imagePaths={imagePaths} onFixedSuccess={fetchImagePaths}/>
+      {Object.keys(imagePaths).map(jobDate => (
+        <div key={jobDate}>
+          <h2>{jobDate}</h2>
+          <ImageGallery imagePaths={imagePaths[jobDate]} />
+        </div>
+      ))}
     </div>
   );
 }

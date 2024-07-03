@@ -3,8 +3,10 @@ import mongoose from 'mongoose';
 // Define the schema for an image URL and associated links
 const UrlSchema = new mongoose.Schema({
     scenario: { type: String, required: true },
-    url: { type: String, required: true }
-}, { _id: false });
+    url: { type: String, required: true },
+    screenshotReference : { type: mongoose.Schema.Types.ObjectId, ref: 'ScreenshotReference' }, // New field to store reference to ScreenshotReference
+    screenshotTest : { type: mongoose.Schema.Types.ObjectId, ref: 'ScreenshotTest' } // New field to store test to ScreenshotTest
+});
 
 // Define the main social media schema
 const SocialMediaSchema = new mongoose.Schema({

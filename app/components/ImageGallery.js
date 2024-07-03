@@ -6,7 +6,7 @@ const ImageGallery = ({ imagePaths, onFixedSuccess }) => {
 
   useEffect(() => {
     console.log('Image paths updated:', imagePaths);
-  }, [imagePaths]);
+  }, []);
 
   const fixed = async (channel, referenceUrl, onFixedSuccess) => {
     console.log(channel);

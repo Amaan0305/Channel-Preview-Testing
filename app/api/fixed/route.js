@@ -1,10 +1,8 @@
 // pages/api/updateReferenceUrl.js
 
 import connectToDatabase from '@/app/lib/mongodb.mjs';
-import Result from '@/app/lib/models/resultSchema.mjs';
-import cloudinary from '@/app/lib/cloudinary.mjs';
-import axios from 'axios';
-import { Readable } from 'stream';
+import JobResult from '@/app/lib/models/resultSchema.mjs';
+import ScreenshotReference from '@/app/lib/models/ScreenshotReference.mjs';
 
 function extractPublicId(cloudinaryUrl) {
   const regex = /\/upload\/(?:v\d+\/)?([^\.]+)/;
@@ -28,7 +26,7 @@ export const POST = async (req, res) => {
     await connectToDatabase();
 
     // Find the platform with the given channel and referenceUrl
-    const result = await Result.findOne({
+    const result = await JobResult.findOne({
       'platforms.platformName': channel,
       'platforms.images.referenceUrl': referenceUrl
     });
@@ -58,39 +56,16 @@ export const POST = async (req, res) => {
       }
       return true; // Keep other images
     });
-
-    if (!testUrl) {
-      return new Response(JSON.stringify({ error: 'Test URL not found for the given Reference URL' }), {
-        status: 404,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    console.log(testUrl);
-    // Download the image from testUrl
-    const response = await axios.get(testUrl, { responseType: 'stream' });
-    const publicId = extractPublicId(referenceUrl);
-
-    // Upload the image buffer to Cloudinary, overwriting the image at referenceUrl
-    const uploadResult = await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        { public_id: publicId, overwrite: true, invalidate: true },
-        (error, result) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(result);
-          }
-        }
-      );
-
-      response.data.pipe(uploadStream);
-    });
-
-
-    // Save the updated result document
+    // Find the ScreenshotReference document with the given channel and referenceUrl
+    const screenshotRef = await ScreenshotReference.findOneAndUpdate(
+      { channel, url: referenceUrl },
+      { $set: { url: testUrl } },
+      { new: true, useFindAndModify: false }
+    );
+    // // Save the updated result document
     await result.save();
 
-    return new Response(JSON.stringify({ message: 'Image updated and entry deleted successfully', uploadResult }), {
+    return new Response(JSON.stringify({ message: 'Reference URL updated successfully', screenshotRef }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });
