@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body{
+    text-align: center;
+}
+.m-4{
+    text-align: left;
+}
+.head-text{
+    font-size: 2rem;
+}
