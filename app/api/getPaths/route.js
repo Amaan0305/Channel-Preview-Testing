@@ -1,6 +1,6 @@
 // Import mongoose and your model
-import connectToDatabase from '@/app/lib/mongodb.mjs';
-import JobResult from '@/app/lib/models/resultSchema.mjs';
+import connectToDatabase from '@/app/lib/mongodb.js';
+import JobResult from '@/app/lib/models/resultSchema.js';
 
 // Define the revalidate value(to remove the route from ISR in vercels)
 export const revalidate = 0;

@@ -1,5 +1,5 @@
-import JobResult from "@/app/lib/models/resultSchema.mjs"; // Import Mongoose JobResult model
-import connectToDatabase from "@/app/lib/mongodb.mjs";
+import JobResult from "@/app/lib/models/resultSchema.js"; 
+import connectToDatabase from "@/app/lib/mongodb.js";
 
 export const POST = async (req) => {
   try {

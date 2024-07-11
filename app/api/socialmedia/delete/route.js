@@ -1,6 +1,6 @@
-import connectToDatabase from '@/app/lib/mongodb.mjs';
-import SocialMedia from '@/app/lib/models/channels.mjs';
-import ScreenshotReference from '@/app/lib/models/ScreenshotReference.mjs';
+import connectToDatabase from '@/app/lib/mongodb.js';
+import SocialMedia from '@/app/lib/models/channels.js';
+import ScreenshotReference from '@/app/lib/models/ScreenshotReference.js';
 
 export const DELETE = async (req) => {
   const { channelName } = await req.json(); // Parse the request body to get the channel name

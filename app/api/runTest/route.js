@@ -1,4 +1,4 @@
-import captureScreenshots from '@/app/server/captureScreenshots.mjs';
+import captureScreenshots from '@/app/server/captureScreenshots.js';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import cloudinary from "@/app/lib/cloudinary";
@@ -6,13 +6,11 @@ import axios from 'axios';
 import stream from 'stream'; 
 import fs from 'fs';
 import path from 'path';
-import SocialMedia from "@/app/lib/models/channels.mjs";
-import ScreenshotReference from "@/app/lib/models/ScreenshotReference.mjs";
-import ScreenshotTest from "@/app/lib/models/ScreenshotTest.mjs";
-import connectToDatabase from "@/app/lib/mongodb.mjs";
-import JobResult from "@/app/lib/models/resultSchema.mjs";
-import mongoose from 'mongoose';
-// import { data } from "autoprefixer";
+import SocialMedia from "@/app/lib/models/channels.js";
+import ScreenshotReference from "@/app/lib/models/ScreenshotReference.js";
+import ScreenshotTest from "@/app/lib/models/ScreenshotTest.js";
+import connectToDatabase from "@/app/lib/mongodb.js";
+import JobResult from "@/app/lib/models/resultSchema.js";
 
 // Function to fetch image from Cloudinary and return as buffer
 async function fetchImageBufferFromCloudinary(url) {
@@ -190,7 +188,6 @@ export const POST = async () => {
     } catch (error) {
       console.error("Error saving data to MongoDB:", error);
     }
-
     console.log("Image comparison and upload to Cloudinary complete");
 
     return new Response(JSON.stringify({ message: "Test complete" }), { status: 201 });

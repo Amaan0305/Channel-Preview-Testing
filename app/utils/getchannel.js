@@ -1,6 +1,6 @@
 "use server";
-import connectToDatabase from '../lib/mongodb.mjs';
-import SocialMedia from '../lib/models/channels.mjs';
+import connectToDatabase from '../lib/mongodb.js';
+import SocialMedia from '../lib/models/channels.js';
 
 export const getChannels = async () => {
   try {

@@ -1,27 +1,12 @@
-import connectToDatabase from '@/app/lib/mongodb.mjs';
-import SocialMedia from '@/app/lib/models/channels.mjs';
-import ScreenshotReference from '@/app/lib/models/ScreenshotReference.mjs';
-import ScreenshotTest from '@/app/lib/models/ScreenshotTest.mjs';
+import connectToDatabase from '@/app/lib/mongodb.js';
+import SocialMedia from '@/app/lib/models/channels.js';
+import ScreenshotReference from '@/app/lib/models/ScreenshotReference.js';
+import ScreenshotTest from '@/app/lib/models/ScreenshotTest.js';
 
 // Define the viewports to capture screenshots
 const viewports = [
   { width: 1920, height: 1080 }  // Large Desktop
 ];
-
-// Function to execute loginByPass code on the page
-async function runLoginByPassCode(page, loginByPassCode) {
-  try {
-    const runCode = new Function(`
-      return (async () => {
-        ${loginByPassCode}
-      })();
-    `);
-    await page.evaluate(runCode);
-  } catch (error) {
-    console.error('Error executing loginByPass code:', error);
-    throw new Error('Error executing loginByPass code');
-  }
-}
 
 export const POST = async (req) => {
   try {
@@ -96,6 +81,6 @@ export const POST = async (req) => {
   } catch (error) {
     // Handle errors during screenshot capture
     console.error('Error capturing screenshot:', error);
-    return new Response(JSON.stringify({ error: error.message }), { status: 500 });
+    return new Response(JSON.stringify({ message: error.message }), { status: 500 });
   }
 };

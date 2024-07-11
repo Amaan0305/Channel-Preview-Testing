@@ -1,6 +1,6 @@
-import JobResult from '@/app/lib/models/resultSchema.mjs'; // Adjust the path to your JobResult model
-import ScreenshotReference from '@/app/lib/models/ScreenshotReference.mjs'; // Adjust the path to your ScreenshotReference model
-import connectToDatabase from '@/app/lib/mongodb.mjs';
+import JobResult from '@/app/lib/models/resultSchema.js'; // Adjust the path to your JobResult model
+import ScreenshotReference from '@/app/lib/models/ScreenshotReference.js'; // Adjust the path to your ScreenshotReference model
+import connectToDatabase from '@/app/lib/mongodb.js';
 
 export const POST = async (req) => {
     const { jobId } = await req.json(); // Retrieve jobId from query parameters

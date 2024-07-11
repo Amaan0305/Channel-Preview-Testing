@@ -1,5 +1,5 @@
-import connectToDatabase from '@/app/lib/mongodb.mjs';
-import JobResult from '@/app/lib/models/resultSchema.mjs';
+import connectToDatabase from '@/app/lib/mongodb.js';
+import JobResult from '@/app/lib/models/resultSchema.js';
 
 // Define revalidate for Vercel
 export const revalidate = 0;

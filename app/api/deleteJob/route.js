@@ -1,5 +1,5 @@
-import JobResult from "@/app/lib/models/resultSchema.mjs"; // Import your Mongoose model
-import connectToDatabase from "@/app/lib/mongodb.mjs";
+import JobResult from "@/app/lib/models/resultSchema.js"; // Import your Mongoose model
+import connectToDatabase from "@/app/lib/mongodb.js";
 
 export async function DELETE(request) {
   // Extract jobId from request URL

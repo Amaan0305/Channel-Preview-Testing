@@ -1,6 +1,6 @@
 // Ensure correct import paths based on your project structure
-import connectToDatabase from '@/app/lib/mongodb.mjs';
-import SocialMedia from '@/app/lib/models/channels.mjs';
+import connectToDatabase from '@/app/lib/mongodb.js';
+import SocialMedia from '@/app/lib/models/channels.js';
 
 export const POST = async (req) => {
   // Handle only POST requests

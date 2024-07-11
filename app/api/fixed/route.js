@@ -1,6 +1,6 @@
-import connectToDatabase from '@/app/lib/mongodb.mjs';
-import JobResult from '@/app/lib/models/resultSchema.mjs';
-import ScreenshotReference from '@/app/lib/models/ScreenshotReference.mjs';
+import connectToDatabase from '@/app/lib/mongodb.js';
+import JobResult from '@/app/lib/models/resultSchema.js';
+import ScreenshotReference from '@/app/lib/models/ScreenshotReference.js';
 
 export const POST = async (req, res) => {
   try {

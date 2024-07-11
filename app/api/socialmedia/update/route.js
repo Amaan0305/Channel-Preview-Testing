@@ -1,5 +1,5 @@
-import connectToDatabase from '@/app/lib/mongodb.mjs';
-import SocialMedia from '@/app/lib/models/channels.mjs';
+import connectToDatabase from '@/app/lib/mongodb.js';
+import SocialMedia from '@/app/lib/models/channels.js';
 
 export const POST = async (req, res) => {
   if (req.method === 'POST') {
