@@ -1,0 +1,43 @@
+{
+  "name": "cpt-next",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "browser": "node app/server/puppeteerServer.mjs",
+    "server": "node app/server/index.js"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
+    "@monaco-editor/react": "^4.6.0",
+    "@mui/icons-material": "^5.15.21",
+    "@mui/material": "^5.15.21",
+    "axios": "^1.7.2",
+    "cloudinary": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "firebase": "^10.12.2",
+    "mongodb": "^6.7.0",
+    "mongoose": "^8.4.3",
+    "next": "^14.2.4",
+    "next-cloudinary": "^6.6.2",
+    "pixelmatch": "^5.3.0",
+    "puppeteer": "^22.11.0",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.24.1",
+    "stream": "^0.0.2"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4"
+  }
+}
