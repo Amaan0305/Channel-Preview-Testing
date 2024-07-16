@@ -28,8 +28,26 @@ const AddPermalink = ({ channels }) => {
     setLoading(true); // Set loading state to true during form submission
 
     try {
+      const res = await fetch('/api/validateAddLink', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: inputUrl,
+          channel: selectedPlatform,
+          scenario: inputScenario,
+        }),
+      });
+      if (!res.ok) {
+        // Handle unsuccessful response
+        const data = await res.json();
+        setError(data.message || 'Failed to add URL');
+        throw new Error(data.message || 'Failed to add URL');
+      }
+      const channelData = await res.json();
       // Send POST request to API endpoint
-      const res = await fetch('/api/healthCheck', {
+      const res1 = await fetch('/api/healthCheck', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -41,9 +59,8 @@ const AddPermalink = ({ channels }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          url: inputUrl,
+          channelData,
           channel: selectedPlatform,
-          scenario: inputScenario,
         }),
       });
 

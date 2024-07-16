@@ -34,8 +34,6 @@ export async function GET(request) {
     // Format fetched results for response
     const formattedResults = formatResults(results);
 
-    console.log(formattedResults);
-
     // Return formatted results as JSON response with 200 OK status
     return new Response(JSON.stringify(formattedResults), {
       status: 200,

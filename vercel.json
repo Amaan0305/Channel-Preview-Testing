@@ -1,34 +1,7 @@
 {
-    "functions": {
-      "api/socialmedia/*": {
-        "maxDuration": 300
-      },
-      "api/deleteJob": {
-        "maxDuration": 300
-      },
-      "api/fixed": {
-        "maxDuration": 300
-      },
-      "api/getImagePaths": {
-        "maxDuration": 300
-      },
-      "api/getJobDate": {
-        "maxDuration": 300
-      },
-      "api/getMostRecentJobId": {
-        "maxDuration": 300
-      },
-      "api/getPaths": {
-        "maxDuration": 300
-      },
-      "api/getTestCounts": {
-        "maxDuration": 300
-      },
-      "api/screenshot": {
-        "maxDuration": 300
-      },
-      "api/healthCheck": {
-        "maxDuration": 10
-      }
+  "functions": {
+    "app/api/**/*": {
+      "maxDuration": 300 
     }
+  }
 }

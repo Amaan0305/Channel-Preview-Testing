@@ -1,5 +1,4 @@
-export const maxDuration = 5; // This function can run for a maximum of 5 seconds
-
+export const maxDuration = 10; // This function can run for a maximum of 5 seconds
 export const GET = async () => {
   try {
     const res = await fetch(`${process.env.API_SERVER_URL}/healthcheck`);

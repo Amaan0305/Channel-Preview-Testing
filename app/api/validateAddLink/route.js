@@ -2,44 +2,6 @@ import connectToDatabase from '@/app/lib/mongodb.js';
 import SocialMedia from '@/app/lib/models/Channels.js';
 
 /**
- * Calls an external API to capture a screenshot.
- * @param {string} channelUrls - The URLs of the channels.
- * @param {string} channel - The name of the channel.
- * @param {string} divSelector - The div selector for the channel.
- * @param {string} directory - The directory to save the screenshot.
- * @returns {Promise<object>} - The response from the API.
- */
-const apiCall = async (channelUrls, channel, divSelector, directory) => {
-  try {
-    // Fetch the channel data from the database
-    const channelData = await SocialMedia.findOne({ channelName: channel });
-
-    const apiPayload = {
-      link: channelUrls,
-      selector: divSelector,
-      directory,
-      channel,
-    };
-    const response = await fetch(`${process.env.API_BASE_URL}/api/screenshot`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(apiPayload),
-    });
-
-    const data = await response.json();
-    if (!response.ok) {
-      const error = 'Failed to call screenshot API : '+ data.message;
-      throw new Error(error);
-    }
-
-    return data;
-  } catch (error) {
-    console.error('Error in apiCall:', error);
-    throw error;
-  }
-};
-
-/**
  * Converts the URL based on the channel name.
  * @param {string} url - The URL to be converted.
  * @param {string} channelName - The name of the channel.
@@ -152,23 +114,41 @@ const validateRedditUrl = (url) => {
 export const POST = async (req) => {
   try {
     // Extract the request payload
-    const { channelData, channel } = await req.json();
-    if (!channelData || !channel) {
+    const { url, channel, scenario } = await req.json();
+    if (!url || !channel || !scenario) {
       throw new Error('URL, channel, and scenario are required');
     }
+
     // Connect to the database
     await connectToDatabase();
-    const {url,scenario,divSelector} = channelData;
-    const newObject = { url, scenario};
-    const startTime = Date.now();
-    // Calls the external API to take screenshot
-    await apiCall(newObject, channel, divSelector, "reference");
-    const endTime = Date.now();
-    const duration = endTime - startTime;
 
-    console.log(duration);
+    // Convert the URL based on the channel name
+    const convertedUrl = convertUrlByChannel(url, channel);
 
-    return new Response(JSON.stringify({ message: 'URL added successfully', newObject }), {
+    // Find the social media channel in the database
+    const socialMediaChannel = await SocialMedia.findOne({ channelName: channel });
+    if (!socialMediaChannel) {
+      throw new Error(`Channel ${channel} not found`);
+    }
+
+    // Check if the URL already exists
+    if (socialMediaChannel.data.some(entry => entry.url === convertedUrl)) {
+      return new Response(JSON.stringify({ message: 'URL already exists' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    }
+
+    // Ensure divSelector is present
+    const { divSelector } = socialMediaChannel;
+    if (!divSelector) {
+      throw new Error('divSelector not found for the selected channel');
+    }
+    const channelData = { url: convertedUrl, scenario, divSelector};
+    console.log(channelData);
+    return new Response(JSON.stringify(channelData), {
       status: 200,
       headers: {
         'Content-Type': 'application/json',

@@ -33,8 +33,6 @@ export async function DELETE(request) {
       for (const image of platform.images) {
         const testPublicId = extractPublicId(image.testUrl);
         const diffPublicId = extractPublicId(image.diffUrl);
-        console.log(testPublicId);
-        console.log(diffPublicId);
         await cloudinary.uploader.destroy(testPublicId);
         if(diffPublicId!="imageSizeDoesNotMatch")await cloudinary.uploader.destroy(diffPublicId);
       }
