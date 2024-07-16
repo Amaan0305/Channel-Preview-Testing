@@ -1,6 +1,30 @@
 {
     "functions": {
-      "app/api/**/*": {
+      "app/api/socialmedia/*": {
+        "maxDuration": 300
+      },
+      "app/api/deleteJob": {
+        "maxDuration": 300
+      },
+      "app/api/fixed": {
+        "maxDuration": 300
+      },
+      "app/api/getImagePaths": {
+        "maxDuration": 300
+      },
+      "app/api/getJobDate": {
+        "maxDuration": 300
+      },
+      "app/api/getMostRecentJobId": {
+        "maxDuration": 300
+      },
+      "app/api/getPaths": {
+        "maxDuration": 300
+      },
+      "app/api/getTestCounts": {
+        "maxDuration": 300
+      },
+      "app/api/screenshot": {
         "maxDuration": 300
       },
       "app/api/healthCheck": {

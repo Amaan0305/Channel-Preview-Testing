@@ -36,7 +36,7 @@ export async function DELETE(request) {
         console.log(testPublicId);
         console.log(diffPublicId);
         await cloudinary.uploader.destroy(testPublicId);
-        await cloudinary.uploader.destroy(diffPublicId);
+        if(diffPublicId!="imageSizeDoesNotMatch")await cloudinary.uploader.destroy(diffPublicId);
       }
     }
 
