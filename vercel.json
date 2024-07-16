@@ -1,33 +1,33 @@
 {
     "functions": {
-      "app/api/socialmedia/*": {
+      "api/socialmedia/*": {
         "maxDuration": 300
       },
-      "app/api/deleteJob": {
+      "api/deleteJob": {
         "maxDuration": 300
       },
-      "app/api/fixed": {
+      "api/fixed": {
         "maxDuration": 300
       },
-      "app/api/getImagePaths": {
+      "api/getImagePaths": {
         "maxDuration": 300
       },
-      "app/api/getJobDate": {
+      "api/getJobDate": {
         "maxDuration": 300
       },
-      "app/api/getMostRecentJobId": {
+      "api/getMostRecentJobId": {
         "maxDuration": 300
       },
-      "app/api/getPaths": {
+      "api/getPaths": {
         "maxDuration": 300
       },
-      "app/api/getTestCounts": {
+      "api/getTestCounts": {
         "maxDuration": 300
       },
-      "app/api/screenshot": {
+      "api/screenshot": {
         "maxDuration": 300
       },
-      "app/api/healthCheck": {
+      "api/healthCheck": {
         "maxDuration": 10
       }
     }
