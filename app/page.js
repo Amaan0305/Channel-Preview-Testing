@@ -1,160 +1,148 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import Link from "next/link";
+
+import { useState, useEffect } from "react";
+import AddPermalink from "./components/AddPermalink";
+import SocialMediaFormComponent from "./components/SocialMediaFormComponent";
+import EditChannelSetupComponent from "./components/EditChannelSetup";
+import { getChannels } from "./utils/getChannel.js";
 import {
+  Container,
+  Typography,
+  Box,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Typography,
   Button,
-  IconButton,
-  Snackbar,
-  Alert,
-  CircularProgress,
-  Tooltip,
-} from "@mui/material";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import DeleteIcon from "@mui/icons-material/Delete";
-import Loader from "./components/Loader";
-import CountDisplay from "./components/CountDisplay";
+  styled,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import Link from 'next/link';
+
+// Styled components for consistent styling
+const BackgroundContainer = styled('div')({
+  minHeight: '100vh',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+});
+
+const StyledContainer = styled(Container)({
+  backgroundColor: "rgba(255, 255, 255, 0.8)", // Slightly transparent for background visibility
+  borderRadius: "8px",
+  padding: "20px",
+  marginTop: "20px",
+  boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+});
+
+const HeaderTypography = styled(Typography)({
+  fontWeight: "bold",
+  color: "#333",
+  textAlign: "center",
+  marginBottom: "20px",
+  flex: 1, // Added for proper centering of the title
+});
+
+const StyledAccordion = styled(Accordion)({
+  backgroundColor: "#fff",
+  marginBottom: "10px",
+  borderRadius: "8px",
+  boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+  "&:before": {
+    display: "none",
+  },
+});
+
+const StyledAccordionSummary = styled(AccordionSummary)({
+  backgroundColor: "#f0f0f0",
+  borderRadius: "8px 8px 0 0",
+  "& .MuiAccordionSummary-content": {
+    alignItems: "center",
+  },
+});
+
+const StyledAccordionDetails = styled(AccordionDetails)({
+  backgroundColor: "#fafafa",
+  borderRadius: "0 0 8px 8px",
+});
+
+const ContentBox = styled(Box)({
+  padding: "10px 20px",
+  backgroundColor: "#fff",
+  borderRadius: "8px",
+  boxShadow: "0 1px 3px rgba(0, 0, 0, 0.1)",
+});
+
+const HeaderContainer = styled(Box)({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  width: '100%',
+  marginBottom: '20px', // Added for spacing between header and content
+});
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
-  const [jobData, setJobData] = useState([]);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [deletingJobId, setDeletingJobId] = useState(null);
-  const [openAccordions, setOpenAccordions] = useState([]);
+  const [channels, setChannels] = useState([]);
+  const fetchChannels = async () => {
+    try {
+      const fetchedChannels = await getChannels();
+      setChannels(fetchedChannels);
+    } catch (error) {
+      console.error('Error fetching channels:', error);
+    }
+  };
 
+  // Fetch channels from server on component mount
   useEffect(() => {
-    fetchJobData();
+    fetchChannels();
   }, []);
 
-  const fetchJobData = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/getPaths");
-      if (!response.ok) {
-        throw new Error("Failed to fetch job data");
-      }
-      const data = await response.json();
-      setJobData(data);
-      setOpenAccordions(Array(data.length).fill(false));
-      setOpenAccordions((prev) => {
-        const updated = [...prev];
-        for (let i = 0; i < Math.min(5, data.length); i++) {
-          updated[i] = true; // Open first 5 accordions
-        }
-        return updated;
-      });
-    } catch (error) {
-      console.error("Error fetching job data:", error);
-      setErrorMessage("Failed to fetch job data");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const deleteJob = async (jobId) => {
-    try {
-      setLoading(true);
-      setDeletingJobId(jobId);
-      const response = await fetch(`/api/deleteJob?jobId=${jobId}`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Failed to delete job");
-      }
-      await fetchJobData();
-      setSuccessMessage("Job deleted successfully");
-    } catch (error) {
-      console.error("Error deleting job:", error);
-      setErrorMessage("Failed to delete job");
-    } finally {
-      setLoading(false);
-      setDeletingJobId(null);
-    }
-  };
-
-  const handleClose = (event, reason) => {
-    if (reason === "clickaway") {
-      return;
-    }
-    setSuccessMessage("");
-    setErrorMessage("");
-  };
-
-  const handleAccordionChange = (index) => {
-    setOpenAccordions((prev) =>
-      prev.map((isOpen, i) => (i === index ? !isOpen : isOpen))
-    );
-  };
-
   return (
-    <div style={{ textAlign: "center", padding: "0 20px", borderRadius: "8px" }}>
-      <header style={{ marginBottom: "20px" }}>
-        <Typography variant="h4" className="head-text">Channel Preview Testing</Typography>
-        <Link href="/admin" passHref>
-          <Button variant="contained" color="secondary" style={{ margin: "10px" }}>
-            Go to Admin Page
-          </Button>
-        </Link>
-      </header>
+    <BackgroundContainer>
+      <StyledContainer maxWidth="md">
+        <ContentBox>
+          <HeaderContainer>
+            <HeaderTypography variant="h4" component="h1" gutterBottom>
+              Channel Preview Testing
+            </HeaderTypography>
+          </HeaderContainer>
 
-      {loading && <Loader size={50} color="primary" />}
+          {/* Add New Permalink section */}
+          <StyledAccordion>
+            <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Add New Permalink</Typography>
+            </StyledAccordionSummary>
+            <StyledAccordionDetails>
+              <AddPermalink channels={channels} />
+            </StyledAccordionDetails>
+          </StyledAccordion>
 
-      {jobData.map(({ jobId, jobDate }, index) => (
-        <Accordion
-          key={jobId}
-          expanded={openAccordions[index]}
-          onChange={() => handleAccordionChange(index)}
-          sx={{
-            borderRadius: "12px",
-            marginBottom: "10px",
-            border: openAccordions[index] ?  "1px solid rgba(0, 0, 0, 0.12)" : "none", // No border when expanded
-            boxShadow: openAccordions[index] ?  "initial" : "none", // Remove shadow when expanded
-          }}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            aria-controls={`${jobDate}-content`}
-            id={`${jobDate}-header`}
-          >
-            <Typography variant="h6">{jobDate}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <CountDisplay jobId={jobId} />
-            <Link href={`/job/${jobId}`} passHref>
-              <Button variant="contained" color="primary" style={{ marginRight: "10px" }}>
-                View Details
+          {/* Add Social Media Channel section */}
+          <StyledAccordion>
+            <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Add Social Media Channel</Typography>
+            </StyledAccordionSummary>
+            <StyledAccordionDetails>
+              <SocialMediaFormComponent fetchChannels={fetchChannels} />
+            </StyledAccordionDetails>
+          </StyledAccordion>
+
+          {/* Edit Channel Setup section */}
+          <StyledAccordion>
+            <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
+              <Typography variant="h6">Edit Channel Setup</Typography>
+            </StyledAccordionSummary>
+            <StyledAccordionDetails>
+              <EditChannelSetupComponent channelNames={channels} fetchChannels={fetchChannels} />
+            </StyledAccordionDetails>
+          </StyledAccordion>
+
+            <Link href="/jobPage" passHref>
+              <Button variant="contained" color="primary">
+                Go to Job Page
               </Button>
             </Link>
-            <Tooltip title="Delete Job">
-              <IconButton
-                aria-label="delete"
-                onClick={() => deleteJob(jobId)}
-                disabled={loading}
-                sx={{ "&:hover": { backgroundColor: "rgba(255, 0, 0, 0.1)" } }}
-              >
-                {deletingJobId === jobId ? <CircularProgress size={24} /> : <DeleteIcon />}
-              </IconButton>
-            </Tooltip>
-          </AccordionDetails>
-        </Accordion>
-      ))}
-
-
-      <Snackbar open={!!successMessage} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity="success">
-          {successMessage}
-        </Alert>
-      </Snackbar>
-
-      <Snackbar open={!!errorMessage} autoHideDuration={6000} onClose={handleClose}>
-        <Alert onClose={handleClose} severity="error">
-          {errorMessage}
-        </Alert>
-      </Snackbar>
-    </div>
+        </ContentBox>
+      </StyledContainer>
+    </BackgroundContainer>
   );
 }
